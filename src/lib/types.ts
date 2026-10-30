@@ -7,11 +7,20 @@ export type RaceStatus = (typeof STATUSES)[number];
 export type Priority = (typeof PRIORITIES)[number];
 export type Role = 'athlete' | 'admin';
 
+export const TSHIRT_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL'] as const;
+
 export interface Profile {
   id: string;
   full_name: string;
   email: string;
   role: Role;
+  avatar_url: string | null;
+  disciplines: Discipline[];
+  tshirt_size: (typeof TSHIRT_SIZES)[number] | null;
+  bio: string | null;
+  strava_url: string | null;
+  instagram: string | null;
+  onboarded_at: string | null;
 }
 
 export interface Race {

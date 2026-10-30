@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { Camera, Pencil, Plus, Trash2, Trophy } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useDeleteResult, useResults, useSignedUrls } from '@/hooks/useData';
@@ -87,7 +87,13 @@ export default function Results() {
                         </span>
                         <div className="min-w-0 flex-1">
                           <p className="flex items-center gap-1 font-bold">
-                            {r.athlete_name}
+                            {r.user_id ? (
+                              <Link to={`/athletes/${r.user_id}`} className="hover:underline">
+                                {r.athlete_name}
+                              </Link>
+                            ) : (
+                              r.athlete_name
+                            )}
                             {podium && <Trophy className="h-4 w-4 text-amber-500" />}
                           </p>
                           {r.result_text && <p className="text-sm">{r.result_text}</p>}

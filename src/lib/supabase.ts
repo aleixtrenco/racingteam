@@ -9,7 +9,8 @@ export const isDemo = import.meta.env.VITE_DEMO === 'true';
 export const isConfigured = Boolean(url && key);
 
 export const supabase = createClient(url ?? 'http://localhost:54321', key ?? 'missing-anon-key', {
-  auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
+  // PKCE so the native app can finish Google sign-in from a deep link.
+  auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, flowType: 'pkce' },
 });
 
 export const TEAM_MANAGER = {

@@ -2,7 +2,9 @@ import { useMemo, useState } from 'react';
 import { Medal, Trophy } from 'lucide-react';
 import { useResults } from '@/hooks/useData';
 import { seasonRanking, seasonsIn, type RankingRow } from '@/lib/ranking';
-import { initials } from '@/components/ProfileDrawer';
+import { Link } from 'react-router-dom';
+import { Avatar } from '@/components/Avatar';
+import { useProfileMap } from '@/hooks/useData';
 import { teamToday } from '@/lib/dates';
 import { Card, EmptyState, PageHeader, Select, Spinner, cx } from '@/components/ui';
 
@@ -48,7 +50,9 @@ export default function Ranking() {
                   <td className="px-3 py-3 text-center font-extrabold">
                     {i < 3 && r.points > 0 ? <Medal className={cx('mx-auto h-5 w-5', ['text-amber-500', 'text-neutral-400', 'text-orange-700'][i])} /> : i + 1}
                   </td>
-                  <td className="px-3 py-3 font-bold">{r.athlete}</td>
+                  <td className="px-3 py-3 font-bold">
+                    <AthleteLink row={r} />
+                  </td>
                   <td className="hidden px-3 py-3 text-center text-neutral-500 sm:table-cell">
                     {r.wins} · {r.seconds} · {r.thirds}
                   </td>
@@ -67,6 +71,7 @@ export default function Ranking() {
 
 /** Season podium: 2nd · 1st · 3rd, step heights like the real thing. */
 function Podium({ rows }: { rows: RankingRow[] }) {
+  const people = useProfileMap();
   if (!rows.length) return null;
   const order = [1, 0, 2].filter((i) => rows[i]);
   const step = ['h-28 sm:h-32', 'h-20 sm:h-24', 'h-14 sm:h-16'];
@@ -76,9 +81,9 @@ function Podium({ rows }: { rows: RankingRow[] }) {
         const r = rows[i];
         return (
           <div key={r.athlete} className="flex min-w-0 flex-col items-center text-center">
-            <span className={cx('mb-2 flex h-11 w-11 items-center justify-center rounded-full text-sm font-extrabold sm:h-12 sm:w-12', i === 0 ? 'bg-brand-yellow text-brand-black ring-4 ring-brand-yellow/30' : 'bg-neutral-200 text-brand-black dark:bg-neutral-800 dark:text-white')}>
-              {initials(r.athlete)}
-            </span>
+            <Link to={r.userId ? `/athletes/${r.userId}` : '#'} className="mb-2">
+              <Avatar name={r.athlete} src={r.userId ? people.get(r.userId)?.avatar_url : null} size="md" tone={i === 0 ? 'yellow' : 'muted'} className={i === 0 ? 'ring-4 ring-brand-yellow/40' : ''} />
+            </Link>
             <p className="w-full truncate px-1 text-sm font-bold">{r.athlete}</p>
             <p className="mb-2 text-xs tabular-nums text-neutral-500">{r.points} pts</p>
             <div className={cx('flex w-full items-start justify-center rounded-t-2xl pt-2 text-3xl font-extrabold tabular-nums', step[i], i === 0 ? 'bg-brand-black text-brand-yellow dark:bg-brand-yellow dark:text-brand-black' : 'bg-white text-brand-black ring-1 ring-neutral-200 dark:bg-neutral-900 dark:text-white dark:ring-neutral-800')}>
@@ -88,5 +93,22 @@ function Podium({ rows }: { rows: RankingRow[] }) {
         );
       })}
     </section>
+  );
+}
+
+function AthleteLink({ row }: { row: RankingRow }) {
+  const people = useProfileMap();
+  const content = (
+    <span className="flex items-center gap-2.5">
+      <Avatar name={row.athlete} src={row.userId ? people.get(row.userId)?.avatar_url : null} size="xs" tone="muted" />
+      <span className="truncate">{row.athlete}</span>
+    </span>
+  );
+  return row.userId ? (
+    <Link to={`/athletes/${row.userId}`} className="hover:underline">
+      {content}
+    </Link>
+  ) : (
+    content
   );
 }

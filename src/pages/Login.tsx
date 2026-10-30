@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react';
-import { supabase, isConfigured, isDemo } from '@/lib/supabase';
+import { supabase, isConfigured } from '@/lib/supabase';
+import { oauthErrorFromUrl, signInWithGoogle } from '@/lib/oauth';
 import { Logo } from '@/components/Logo';
 import { Button, ErrorNote, Input, Label } from '@/components/ui';
 
@@ -11,7 +12,7 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<unknown>(null);
+  const [error, setError] = useState<unknown>(() => oauthErrorFromUrl());
   const [message, setMessage] = useState('');
 
   const submit = async (e: FormEvent) => {
@@ -45,12 +46,11 @@ export default function Login() {
 
   const google = async () => {
     setError(null);
-    if (isDemo) {
-      const { error } = await supabase.auth.signInWithPassword({ email: 'demo@wolfis.ae', password: 'demo-preview' });
-      return error && setError(error);
+    try {
+      await signInWithGoogle();
+    } catch (e) {
+      setError(e);
     }
-    const { error } = await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin } });
-    if (error) setError(error);
   };
 
   return (
@@ -59,10 +59,10 @@ export default function Login() {
       <div aria-hidden className="absolute -right-10 -top-10 h-[230px] w-[120px] -translate-x-[30px] skew-x-[-18deg] border-l-[8px] border-white/90 sm:-right-32 sm:h-[420px] sm:w-[40%] sm:-translate-x-[38px] sm:border-l-[10px]" />
       <div className="relative flex flex-1 flex-col justify-end px-6 pb-10 pt-[calc(4rem+env(safe-area-inset-top))] sm:items-center sm:justify-center">
         <Logo white className="h-16 self-start sm:h-20 sm:self-center" />
-        <p className="mt-5 max-w-xs text-[15px] leading-relaxed text-neutral-300 sm:text-center">The team's race calendar, sign-ups, results and season ranking, in one place.</p>
+        <p className="mt-5 max-w-xs pr-24 text-[15px] leading-relaxed text-neutral-300 sm:pr-0 sm:text-center">The team's race calendar, sign-ups, results and season ranking, in one place.</p>
       </div>
       <div className="relative rounded-t-[28px] bg-white px-6 pb-[calc(2rem+env(safe-area-inset-bottom))] pt-7 text-brand-black dark:bg-neutral-900 dark:text-white sm:mx-auto sm:mb-16 sm:w-full sm:max-w-md sm:rounded-[28px] sm:pb-8">
-        <h1 className="text-xl font-extrabold">{mode === 'signin' ? 'Sign in' : mode === 'signup' ? 'Create your account' : 'Reset password'}</h1>
+        <h1 className="text-xl font-extrabold">{mode === 'signin' ? 'Sign in' : mode === 'signup' ? 'Join the team' : 'Reset password'}</h1>
         {!isConfigured && (
           <p className="mt-3 rounded-xl bg-amber-50 p-3 text-sm text-amber-800">Supabase isn't configured yet. Copy <code>.env.example</code> to <code>.env</code> and add your project URL and anon key.</p>
         )}
@@ -76,8 +76,9 @@ export default function Login() {
                 <path fill="#FBBC05" d="M5.8 14c-.2-.7-.4-1.3-.4-2s.1-1.4.4-2V7.1H2.1A11 11 0 0 0 1 12c0 1.8.4 3.4 1.1 4.9L5.8 14z" />
                 <path fill="#EA4335" d="M12 5.4c1.6 0 3.1.6 4.2 1.6l3.2-3.2A11 11 0 0 0 2.1 7.1L5.8 10c.9-2.7 3.3-4.6 6.2-4.6z" />
               </svg>
-              Continue with Google
+              {mode === 'signup' ? 'Sign up with Google' : 'Continue with Google'}
             </Button>
+            {mode === 'signup' && <p className="mt-2 text-center text-xs text-neutral-500">Your name and photo come from Google. You'll set up your racing profile next.</p>}
             <div className="my-5 flex items-center gap-3 text-xs text-neutral-400">
               <span className="h-px flex-1 bg-neutral-200 dark:bg-neutral-700" /> or <span className="h-px flex-1 bg-neutral-200 dark:bg-neutral-700" />
             </div>

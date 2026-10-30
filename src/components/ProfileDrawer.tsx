@@ -1,33 +1,22 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { BarChart3, Handshake, LogOut, Settings, Trash2, Trophy, X } from 'lucide-react';
+import { BarChart3, ChevronRight, Handshake, LogOut, Settings, Trash2, Trophy, UserRound, X } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { deleteMyAccount } from '@/hooks/useData';
-import { supabase } from '@/lib/supabase';
-import { Button, ErrorNote, Input, Label } from './ui';
+import { Avatar } from './Avatar';
+import { Button, ErrorNote } from './ui';
 
-export const initials = (name: string) => name.split(/\s+/).filter(Boolean).slice(0, 2).map((p) => p[0]!.toUpperCase()).join('') || '?';
+export { initials } from './Avatar';
 
 export function ProfileDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const { profile, isAdmin, signOut, refreshProfile } = useAuth();
+  const { profile, isAdmin, signOut } = useAuth();
   const qc = useQueryClient();
-  const [name, setName] = useState(profile?.full_name ?? '');
-  const [saving, setSaving] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<unknown>(null);
 
   if (!open || !profile) return null;
-
-  const saveName = async () => {
-    setSaving(true);
-    setError(null);
-    const { error } = await supabase.from('profiles').update({ full_name: name.trim() }).eq('id', profile.id);
-    setSaving(false);
-    if (error) return setError(error);
-    await refreshProfile();
-  };
 
   const remove = async () => {
     setDeleting(true);
@@ -53,7 +42,7 @@ export function ProfileDrawer({ open, onClose }: { open: boolean; onClose: () =>
           </button>
         </div>
         <div className="flex items-center gap-3 px-5 pb-5">
-          <span className="flex h-14 w-14 items-center justify-center rounded-full bg-brand-yellow text-lg font-extrabold text-brand-black">{initials(profile.full_name)}</span>
+          <Avatar name={profile.full_name} src={profile.avatar_url} size="lg" />
           <div className="min-w-0">
             <p className="truncate font-extrabold">{profile.full_name || 'Athlete'}</p>
             <p className="truncate text-sm text-neutral-500">{profile.email}</p>
@@ -61,13 +50,10 @@ export function ProfileDrawer({ open, onClose }: { open: boolean; onClose: () =>
           </div>
         </div>
 
-        <div className="space-y-3 border-t border-neutral-200 px-5 py-5 dark:border-neutral-800">
-          <Label label="Display name" hint="Shown on race lists, results and the ranking.">
-            <Input value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" />
-          </Label>
-          <Button variant="secondary" className="w-full" onClick={saveName} loading={saving} disabled={!name.trim() || name.trim() === profile.full_name}>
-            Save name
-          </Button>
+        <div className="border-t border-neutral-200 px-3 py-3 dark:border-neutral-800">
+          <Link to={`/athletes/${profile.id}`} onClick={onClose} className={link}>
+            <UserRound className="h-5 w-5" /> <span className="flex-1">My racing profile</span> <ChevronRight className="h-4 w-4 text-neutral-400" />
+          </Link>
         </div>
 
         {isAdmin && (

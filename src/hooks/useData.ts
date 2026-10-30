@@ -3,6 +3,7 @@
 // requests on app start to two.
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { isDemo, supabase } from '@/lib/supabase';
+import { PROFILE_FIELDS } from './useAuth';
 import type { Profile, Race, RaceResult, Registration, Sponsor } from '@/lib/types';
 
 const unwrap = <T,>({ data, error }: { data: T | null; error: { message: string } | null }): T => {
@@ -52,8 +53,14 @@ export const useProfiles = (enabled = true) =>
   useQuery({
     queryKey: keys.profiles,
     enabled,
-    queryFn: async () => unwrap<Profile[]>(await supabase.from('profiles').select('id, full_name, email, role').order('full_name')),
+    queryFn: async () => unwrap<Profile[]>(await supabase.from('profiles').select(PROFILE_FIELDS).order('full_name')),
   });
+
+/** id → profile, for photos and profile links next to athlete names. */
+export function useProfileMap() {
+  const { data = [] } = useProfiles();
+  return new Map(data.map((p) => [p.id, p]));
+}
 
 // ---- mutations -------------------------------------------------------------
 
@@ -164,6 +171,33 @@ export function useDeleteResult() {
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: keys.results }),
   });
+}
+
+// ---- racing profiles -------------------------------------------------------
+
+export type ProfileInput = Pick<Profile, 'full_name' | 'avatar_url' | 'disciplines' | 'tshirt_size' | 'bio' | 'strava_url' | 'instagram'> & { onboarded_at?: string };
+
+export function useSaveProfile() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, ...p }: ProfileInput & { id: string }) =>
+      unwrap<Profile>(await supabase.from('profiles').update(p).eq('id', id).select(PROFILE_FIELDS).single()),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: keys.profiles });
+      qc.invalidateQueries({ queryKey: keys.registrations });
+    },
+  });
+}
+
+export const AVATAR_BUCKET = 'avatars';
+
+export async function uploadAvatar(userId: string, file: File): Promise<string> {
+  const blob = await compress(file, 512, 0.85);
+  const path = `${userId}/${crypto.randomUUID()}.jpg`;
+  const { error } = await supabase.storage.from(AVATAR_BUCKET).upload(path, blob, { contentType: 'image/jpeg' });
+  if (error) throw new Error(`Photo upload failed: ${error.message}`);
+  if (isDemo) return (window as unknown as { __demoPhotoUrl: (p: string) => string }).__demoPhotoUrl(path);
+  return supabase.storage.from(AVATAR_BUCKET).getPublicUrl(path).data.publicUrl;
 }
 
 // ---- sponsors --------------------------------------------------------------

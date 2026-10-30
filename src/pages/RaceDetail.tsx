@@ -3,11 +3,11 @@ import { useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { AlertTriangle, ArrowLeft, CalendarDays, Clock, Mail, MapPin, Pencil, ShieldAlert, Users } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import { useRaces, useRegister, useRegistrations, useUnregister } from '@/hooks/useData';
+import { useProfileMap, useRaces, useRegister, useRegistrations, useUnregister } from '@/hooks/useData';
 import { daysBetween, daysToDeadline, deadlineLabel, formatDate, isRegistrationOpen, registrationDeadline, teamToday } from '@/lib/dates';
 import { TEAM_MANAGER } from '@/lib/supabase';
 import { RaceFormModal } from '@/components/RaceFormModal';
-import { initials } from '@/components/ProfileDrawer';
+import { Avatar } from '@/components/Avatar';
 import { BibDate } from '@/components/BibDate';
 import { Badge, Button, Card, DisciplineBadge, ErrorNote, Input, Label, PriorityBadge, Spinner, StatusBadge, cx } from '@/components/ui';
 
@@ -21,6 +21,7 @@ export default function RaceDetail() {
   const unregister = useUnregister();
   const [note, setNote] = useState('');
   const [editing, setEditing] = useState(false);
+  const people = useProfileMap();
 
   const race = races.find((r) => r.id === id);
   const athletes = useMemo(() => regs.filter((r) => r.race_id === id).sort((a, b) => a.athlete_name.localeCompare(b.athlete_name)), [regs, id]);
@@ -153,14 +154,16 @@ export default function RaceDetail() {
           <ul className="divide-y divide-neutral-100 dark:divide-neutral-800">
             {athletes.map((a) => (
               <li key={a.id} className="flex items-center gap-3 py-2.5">
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-neutral-100 text-xs font-extrabold dark:bg-neutral-800">{initials(a.athlete_name)}</span>
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate font-bold">
-                    {a.athlete_name}
-                    {a.user_id === profile?.id && <Badge className="ml-2 bg-brand-yellow align-middle text-brand-black">You</Badge>}
+                <Link to={a.user_id ? `/athletes/${a.user_id}` : '#'} className="flex min-w-0 flex-1 items-center gap-3">
+                  <Avatar name={a.athlete_name} src={a.user_id ? people.get(a.user_id)?.avatar_url : null} tone="muted" />
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate font-bold">
+                      {a.athlete_name}
+                      {a.user_id === profile?.id && <Badge className="ml-2 bg-brand-yellow align-middle text-brand-black">You</Badge>}
+                    </span>
+                    {a.note && <span className="block truncate text-xs text-neutral-500">{a.note}</span>}
                   </span>
-                  {a.note && <span className="block truncate text-xs text-neutral-500">{a.note}</span>}
-                </span>
+                </Link>
                 {isAdmin && a.user_id !== profile?.id && (
                   <Button variant="ghost" className="text-xs text-red-600" onClick={() => unregister.mutate(a.id)} aria-label={`Remove ${a.athlete_name}`}>
                     Remove

@@ -4,7 +4,8 @@ import { CalendarDays, Camera, Flag, Home, Settings, Trophy } from 'lucide-react
 import { useAuth } from '@/hooks/useAuth';
 import { Logo } from './Logo';
 import { NotificationBell } from './NotificationBell';
-import { ProfileDrawer, initials } from './ProfileDrawer';
+import { ProfileDrawer } from './ProfileDrawer';
+import { Avatar } from './Avatar';
 import { cx } from './ui';
 
 const tabs = [
@@ -47,9 +48,7 @@ export function Layout() {
           <div className="ml-auto flex items-center gap-1 md:ml-0">
             <NotificationBell />
             <button onClick={() => setDrawer(true)} className="flex min-h-touch min-w-touch items-center justify-center" aria-label="Open profile">
-              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-black text-sm font-extrabold text-brand-yellow dark:bg-brand-yellow dark:text-brand-black">
-                {initials(profile?.full_name ?? '')}
-              </span>
+              <Avatar name={profile?.full_name ?? ''} src={profile?.avatar_url} tone="dark" />
             </button>
           </div>
         </div>

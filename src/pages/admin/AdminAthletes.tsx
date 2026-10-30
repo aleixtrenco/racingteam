@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Download } from 'lucide-react';
 import { useRaces, useRegistrations, useResults } from '@/hooks/useData';
 import { teamToday } from '@/lib/dates';
@@ -6,6 +7,7 @@ import { Button, Card, Select, Spinner } from '@/components/ui';
 
 interface Row {
   athlete: string;
+  userId: string | null;
   email: string;
   total: number;
   upcoming: number;
@@ -30,7 +32,7 @@ export default function AdminAthletes() {
       if (year !== 'all' && r.race_date?.slice(0, 4) !== year) continue;
       if (cancelled.has(r.race_id)) continue;
       const key = r.user_id ?? r.athlete_email ?? r.athlete_name;
-      const row = map.get(key) ?? { athlete: r.athlete_name, email: r.athlete_email, total: 0, upcoming: 0, past: 0, recaps: 0 };
+      const row = map.get(key) ?? { athlete: r.athlete_name, email: r.athlete_email, userId: r.user_id, total: 0, upcoming: 0, past: 0, recaps: 0 };
       row.total++;
       if (r.race_date && r.race_date >= today) row.upcoming++;
       else row.past++;
@@ -77,7 +79,7 @@ export default function AdminAthletes() {
               <li key={r.email + r.athlete} className="rounded-2xl border border-neutral-200 bg-white p-3 dark:border-neutral-800 dark:bg-neutral-900">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="truncate font-bold">{r.athlete}</p>
+                    <AthleteName row={r} className="truncate font-bold" />
                     <p className="truncate text-xs text-neutral-500">{r.email}</p>
                   </div>
                   <span className="shrink-0 text-right">
@@ -112,7 +114,7 @@ export default function AdminAthletes() {
                 {rows.map((r) => (
                   <tr key={r.email + r.athlete}>
                     <td className="px-4 py-2.5">
-                      <p className="font-bold">{r.athlete}</p>
+                      <AthleteName row={r} className="font-bold" />
                       <p className="text-xs text-neutral-500">{r.email}</p>
                     </td>
                     <td className="px-4 py-2.5 text-center text-base font-extrabold tabular-nums">{r.total}</td>
@@ -129,3 +131,12 @@ export default function AdminAthletes() {
     </div>
   );
 }
+
+const AthleteName = ({ row, className }: { row: Row; className: string }) =>
+  row.userId ? (
+    <Link to={`/athletes/${row.userId}`} className={`${className} block hover:underline`}>
+      {row.athlete}
+    </Link>
+  ) : (
+    <p className={className}>{row.athlete}</p>
+  );

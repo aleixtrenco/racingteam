@@ -19,6 +19,8 @@ const AdminResults = lazy(() => import('@/pages/admin/AdminResults'));
 const AdminSponsors = lazy(() => import('@/pages/admin/AdminSponsors'));
 const AdminAthletes = lazy(() => import('@/pages/admin/AdminAthletes'));
 const ResetPassword = lazy(() => import('@/pages/ResetPassword'));
+const AthleteProfile = lazy(() => import('@/pages/AthleteProfile'));
+const Onboarding = lazy(() => import('@/pages/Onboarding'));
 
 // The sample-data preview runs inside an embedded frame, where the URL path isn't ours.
 const Router = isDemo ? MemoryRouter : BrowserRouter;
@@ -30,7 +32,7 @@ const AdminOnly = ({ children }: { children: ReactNode }) => {
 };
 
 export default function App() {
-  const { session, loading } = useAuth();
+  const { session, loading, profile } = useAuth();
 
   if (loading)
     return (
@@ -45,6 +47,11 @@ export default function App() {
         <Routes>
           <Route path="*" element={<Login />} />
         </Routes>
+      ) : profile && !profile.onboarded_at ? (
+        // First sign-in: set up the racing profile before anything else.
+        <Suspense fallback={<Spinner />}>
+          <Onboarding />
+        </Suspense>
       ) : (
         <Suspense fallback={<Spinner />}>
           <Routes>
@@ -55,6 +62,7 @@ export default function App() {
               <Route path="my-races" element={<MyRaces />} />
               <Route path="results" element={<Results />} />
               <Route path="ranking" element={<Ranking />} />
+              <Route path="athletes/:id" element={<AthleteProfile />} />
               <Route path="reset-password" element={<ResetPassword />} />
               <Route path="admin" element={<AdminOnly><AdminLayout /></AdminOnly>}>
                 <Route index element={<AdminRaces />} />

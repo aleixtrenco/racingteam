@@ -3,6 +3,8 @@ import type { Session } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 import type { Profile } from '@/lib/types';
 
+export const PROFILE_FIELDS = 'id, full_name, email, role, avatar_url, disciplines, tshirt_size, bio, strava_url, instagram, onboarded_at';
+
 interface AuthState {
   session: Session | null;
   profile: Profile | null;
@@ -21,7 +23,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const loadProfile = useCallback(async (userId: string | undefined) => {
     if (!userId) return setProfile(null);
-    const { data } = await supabase.from('profiles').select('id, full_name, email, role').eq('id', userId).single();
+    const { data } = await supabase.from('profiles').select(PROFILE_FIELDS).eq('id', userId).single();
     setProfile(data as Profile | null);
   }, []);
 

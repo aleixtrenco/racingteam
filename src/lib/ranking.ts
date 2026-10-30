@@ -4,6 +4,7 @@ export const POINTS: Record<number, number> = { 1: 3, 2: 2, 3: 1 };
 
 export interface RankingRow {
   athlete: string;
+  userId: string | null;
   points: number;
   races: number;
   wins: number;
@@ -19,7 +20,7 @@ export function seasonRanking(results: RaceResult[], year: number): RankingRow[]
     const name = r.athlete_name.trim();
     if (!name) continue;
     const key = r.user_id ?? name.toLowerCase();
-    const row = rows.get(key) ?? { athlete: name, points: 0, races: 0, wins: 0, seconds: 0, thirds: 0 };
+    const row = rows.get(key) ?? { athlete: name, userId: r.user_id, points: 0, races: 0, wins: 0, seconds: 0, thirds: 0 };
     row.races += 1;
     const pos = r.overall_position ?? 0;
     row.points += POINTS[pos] ?? 0;

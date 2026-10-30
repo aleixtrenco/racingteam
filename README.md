@@ -21,7 +21,15 @@ npm test                  # deadline + ranking rules
 2. **Database:** run the files in `supabase/migrations/` in order. You can paste them into the SQL editor or use `supabase db push`.
    - `…_init.sql`: tables, security rules, the private `recap-photos` bucket, account deletion and sponsor seed data.
    - `…_automations.sql`: first create the two Vault secrets described at the top of that file, then run it.
-3. **Auth → Providers:** Email is on by default. To enable Google, create an OAuth client in Google Cloud and paste its ID and secret here.
+   - `…_sponsor_logos.sql` and `…_sponsor_logos_abus_sox.sql`: sponsor logos and websites, plus the logo upload bucket.
+   - `…_racing_profiles.sql`: racing profile fields, the Google photo on sign-up, and the profile photo bucket.
+3. **Google sign-up / sign-in.** Anyone on the team can join with one tap, and their racing profile is created on first sign-in.
+   1. In [Google Cloud Console](https://console.cloud.google.com/apis/credentials), go to **Create credentials → OAuth client ID → Web application**.
+   2. Under **Authorised redirect URIs**, add `https://<your-project-ref>.supabase.co/auth/v1/callback`.
+   3. On the **OAuth consent screen**, set the app name to "Wolfi's Racing Team", add the logo, and publish it, so people outside your Google Workspace can sign in.
+   4. In **Supabase → Authentication → Providers → Google**, turn it on and paste the client ID and secret.
+
+   Email + password stays available for anyone without Google.
    - **Auth → URL configuration:** add your site URL (e.g. `https://racing.wolfis.ae`) and `http://localhost:5173` as redirect URLs.
 4. **Make yourself admin.** Sign up in the app, then run:
    ```sql
@@ -66,10 +74,9 @@ Still to add:
 
 | File | What |
 |---|---|
-| `public/brand/hero.jpg` | Optional hero photo behind the Home banner. **Keep it under ~200 KB.** |
+| `public/brand/hero.jpg` | The team photo from the [Wolfi's Racing Team page](https://wolfis.ae/pages/wolfisracingteam), used behind the Home banner. **Keep it under ~200 KB** (1600 px wide, JPEG quality ~75). |
 | `public/brand/kit-2026.png` | 2026 kit mockup (desktop only). The card stays hidden until it exists. |
 | `public/fonts/Gilroy-{Regular,Medium,Bold,ExtraBold}.woff2` | Licensed Gilroy. Until it's added, the app uses Outfit from Google Fonts. |
-| ABUS and Sox logos | Upload them in **Admin → Sponsors**, and add Sox's website there. |
 
 ## 5. Deploy
 
@@ -80,7 +87,10 @@ Still to add:
   npm run cap:sync
   npm run cap:ios      # or cap:android
   ```
-  For Google sign-in inside the native app, add a deep-link URL scheme (`ae.wolfis.racingteam://`) to the Supabase redirect URLs and handle it with `@capacitor/app`.
+  **Google sign-in in the native app** is handled in `src/lib/oauth.ts`. It opens Google in an in-app browser and finishes on the deep link `ae.wolfis.racingteam://auth-callback`. To make that work:
+  - Add `ae.wolfis.racingteam://auth-callback` to **Supabase → Auth → URL configuration → Redirect URLs**.
+  - iOS: in Xcode, add the URL scheme `ae.wolfis.racingteam` under **Target → Info → URL Types**.
+  - Android: add an intent filter for scheme `ae.wolfis.racingteam`, host `auth-callback`, to `MainActivity` in `AndroidManifest.xml`.
 
 ---
 
@@ -95,6 +105,7 @@ Still to add:
 | Private photos via time-limited links | `recap-photos` bucket plus `createSignedUrls` (one request per page) |
 | Account deletion | Profile drawer → `delete_my_account()` (photos, registrations, results, then the account itself) |
 | Automations 1–4 | `supabase/functions/*` triggered from the database. Recap reminder: Mondays 09:00 Dubai. |
+| Racing profiles | Google or email sign-up, then a welcome screen to set up the profile (photo, disciplines, kit size, bio, Strava, Instagram). Each athlete has a page at `/athletes/:id` with season points, team rank, upcoming races and their results history. Names across the app link to these pages. |
 | Admin area | **Admin → Races** (search, quick status/priority/team-entry changes, edit, duplicate, delete) · **Results** (pick a race, enter every rider's overall position and time, save all at once; full recap with photos) · **Sponsors** (logo, website, tier, order) · **Athletes** (participation per season, CSV) |
 | Notification bell | Derived in-app from data (`useNotifications`): closing deadlines, races this week, recaps to add |
 | Native feel | Bottom tab bar with safe areas, 44 px targets, no overscroll/tap highlight/control selection, pull-to-refresh on Home and My Races |
