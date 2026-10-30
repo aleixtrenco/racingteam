@@ -23,6 +23,7 @@ npm test                  # deadline + ranking rules
    - `…_automations.sql`: first create the two Vault secrets described at the top of that file, then run it.
    - `…_sponsor_logos.sql` and `…_sponsor_logos_abus_sox.sql`: sponsor logos and websites, plus the logo upload bucket.
    - `…_racing_profiles.sql`: racing profile fields, the Google photo on sign-up, and the profile photo bucket.
+   - `…_race_calendar_26_27.sql`: the 2026/27 race calendar from the team spreadsheet (36 races), plus end dates for multi-day events. Safe to re-run.
 3. **Google sign-up / sign-in.** Anyone on the team can join with one tap, and their racing profile is created on first sign-in.
    1. In [Google Cloud Console](https://console.cloud.google.com/apis/credentials), go to **Create credentials → OAuth client ID → Web application**.
    2. Under **Authorised redirect URIs**, add `https://<your-project-ref>.supabase.co/auth/v1/callback`.

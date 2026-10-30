@@ -4,7 +4,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { AlertTriangle, ArrowLeft, CalendarDays, Clock, Mail, MapPin, Pencil, ShieldAlert, Users } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfileMap, useRaces, useRegister, useRegistrations, useUnregister } from '@/hooks/useData';
-import { daysBetween, daysToDeadline, deadlineLabel, formatDate, isRegistrationOpen, registrationDeadline, teamToday } from '@/lib/dates';
+import { formatRaceDates, daysBetween, daysToDeadline, deadlineLabel, formatDate, isRegistrationOpen, registrationDeadline, teamToday } from '@/lib/dates';
 import { TEAM_MANAGER } from '@/lib/supabase';
 import { RaceFormModal } from '@/components/RaceFormModal';
 import { Avatar } from '@/components/Avatar';
@@ -47,8 +47,8 @@ export default function RaceDetail() {
 
   const join = () => profile && register.mutate({ raceId: race.id, userId: profile.id, note }, { onSuccess: () => setNote('') });
 
-  const managerMail = `mailto:${TEAM_MANAGER.email}?subject=${encodeURIComponent(`Team entry: ${race.event_name} (${formatDate(race.race_date)})`)}&body=${encodeURIComponent(
-    `Hi ${TEAM_MANAGER.name},\n\nPlease handle the team entry for ${race.event_name} on ${formatDate(race.race_date)}${race.location ? ` in ${race.location}` : ''}.\n\nAthletes registered in the app (${athletes.length}):\n${athletes.map((a) => `- ${a.athlete_name}${a.note ? ` (${a.note})` : ''}`).join('\n') || '- none yet'}\n\nThanks!`,
+  const managerMail = `mailto:${TEAM_MANAGER.email}?subject=${encodeURIComponent(`Team entry: ${race.event_name} (${formatRaceDates(race)})`)}&body=${encodeURIComponent(
+    `Hi ${TEAM_MANAGER.name},\n\nPlease handle the team entry for ${race.event_name} on ${formatRaceDates(race)}${race.location ? ` in ${race.location}` : ''}.\n\nAthletes registered in the app (${athletes.length}):\n${athletes.map((a) => `- ${a.athlete_name}${a.note ? ` (${a.note})` : ''}`).join('\n') || '- none yet'}\n\nThanks!`,
   )}`;
 
   return (
@@ -76,7 +76,7 @@ export default function RaceDetail() {
             )}
           </div>
           <dl className="grid gap-3 text-sm sm:grid-cols-2">
-            <Info icon={<CalendarDays className="h-4 w-4" />} label="Date" value={`${formatDate(race.race_date)}${daysToRace > 0 ? ` · in ${daysToRace} day${daysToRace === 1 ? '' : 's'}` : daysToRace === 0 ? ' · today' : ''}`} />
+            <Info icon={<CalendarDays className="h-4 w-4" />} label="Date" value={`${formatRaceDates(race)}${daysToRace > 0 ? ` · in ${daysToRace} day${daysToRace === 1 ? '' : 's'}` : daysToRace === 0 ? ' · today' : ''}`} />
             {race.location && <Info icon={<MapPin className="h-4 w-4" />} label="Location" value={race.location} />}
             {!race.team_entry_only && !cancelled && (
               <Info icon={<Clock className="h-4 w-4" />} label="Registration deadline" value={`${formatDate(registrationDeadline(race.race_date))} · ${deadlineLabel(race.race_date, today)}`} alert={open && dl <= 3} />

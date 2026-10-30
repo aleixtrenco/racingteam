@@ -5,7 +5,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { useRaces, useRegister, useRegistrations, useResults, useUnregister } from '@/hooks/useData';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
-import { DEADLINE_WARNING_DAYS, daysToDeadline, deadlineLabel, formatShort, isRegistrationOpen, isUpcoming, registrationDeadline, teamToday } from '@/lib/dates';
+import { DEADLINE_WARNING_DAYS, daysToDeadline, deadlineLabel, formatShort, isRegistrationOpen, raceIsUpcoming, registrationDeadline, teamToday } from '@/lib/dates';
 import { RaceRow } from '@/components/RaceRow';
 import { Button, EmptyState, ErrorNote, PageHeader, PullIndicator, Spinner } from '@/components/ui';
 
@@ -31,8 +31,8 @@ export default function MyRaces() {
         const d = daysToDeadline(r.race_date, today);
         return !myRegs.has(r.id) && !r.team_entry_only && d >= 0 && d <= DEADLINE_WARNING_DAYS;
       }),
-      upcoming: races.filter((r) => myRegs.has(r.id) && isUpcoming(r.race_date, today)),
-      past: active.filter((r) => myRegs.has(r.id) && !isUpcoming(r.race_date, today)).reverse(),
+      upcoming: races.filter((r) => myRegs.has(r.id) && raceIsUpcoming(r, today)),
+      past: active.filter((r) => myRegs.has(r.id) && !raceIsUpcoming(r, today)).reverse(),
     };
   }, [races, regs, results, profile]);
 

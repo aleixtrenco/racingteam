@@ -26,7 +26,8 @@ export interface Profile {
 export interface Race {
   id: string;
   event_name: string;
-  race_date: string; // yyyy-mm-dd
+  race_date: string; // yyyy-mm-dd (first day)
+  end_date: string | null; // last day of a multi-day event
   location: string | null;
   status: RaceStatus;
   priority: Priority;

@@ -43,3 +43,17 @@ describe('season ranking', () => {
     expect(rows[0].athlete).toBe('Ben');
   });
 });
+
+describe('multi-day races', () => {
+  it('formats date ranges', async () => {
+    const { formatRaceDates } = await import('./dates');
+    expect(formatRaceDates({ race_date: '2026-11-12', end_date: '2026-11-15' })).toBe('12–15 Nov 2026');
+    expect(formatRaceDates({ race_date: '2027-01-30', end_date: '2027-02-01' })).toBe('30 Jan – 1 Feb 2027');
+    expect(formatRaceDates({ race_date: '2026-10-04', end_date: null })).toBe('Sun, 4 Oct 2026');
+  });
+  it('stays upcoming until the last day', async () => {
+    const { raceIsUpcoming } = await import('./dates');
+    expect(raceIsUpcoming({ race_date: '2026-11-13', end_date: '2026-11-22' }, '2026-11-20')).toBe(true);
+    expect(raceIsUpcoming({ race_date: '2026-11-13', end_date: '2026-11-22' }, '2026-11-23')).toBe(false);
+  });
+});

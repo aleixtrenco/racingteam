@@ -25,6 +25,9 @@ export const daysToDeadline = (raceDate: string, today = teamToday()) => daysBet
 
 export const isUpcoming = (raceDate: string, today = teamToday()) => raceDate >= today;
 
+/** A race stays upcoming until its last day (multi-day events). */
+export const raceIsUpcoming = (race: { race_date: string; end_date?: string | null }, today = teamToday()) => isUpcoming(race.end_date ?? race.race_date, today);
+
 export function deadlineLabel(raceDate: string, today = teamToday()): string {
   const d = daysToDeadline(raceDate, today);
   if (d < 0) return 'Registration closed';
@@ -41,3 +44,12 @@ export const formatShort = fmt({ day: 'numeric', month: 'short' });
 export const formatMonth = fmt({ month: 'long', year: 'numeric' });
 export const dayOfMonth = fmt({ day: 'numeric' });
 export const monthAbbr = fmt({ month: 'short' });
+
+/** "Thu, 12 Nov 2026" or, for multi-day events, "12–15 Nov 2026" / "30 Jan – 2 Feb 2027". */
+export function formatRaceDates(race: { race_date: string; end_date?: string | null }): string {
+  const { race_date: a, end_date: b } = race;
+  if (!b || b === a) return formatDate(a);
+  const year = fmt({ year: 'numeric' });
+  if (a.slice(0, 7) === b.slice(0, 7)) return `${dayOfMonth(a)}–${dayOfMonth(b)} ${monthAbbr(a)} ${year(a)}`;
+  return `${formatShort(a)} – ${formatShort(b)} ${year(b)}`;
+}

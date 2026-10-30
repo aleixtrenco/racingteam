@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronRight, MapPin, Users } from 'lucide-react';
 import type { Race } from '@/lib/types';
-import { daysToDeadline, deadlineLabel, isRegistrationOpen } from '@/lib/dates';
+import { daysToDeadline, deadlineLabel, formatRaceDates, isRegistrationOpen } from '@/lib/dates';
 import { BibDate } from './BibDate';
 import { Badge, DisciplineBadge, PriorityBadge, StatusBadge, cx } from './ui';
 
@@ -15,8 +15,9 @@ export function RaceRow({ race, registeredCount, isMine, action }: { race: Race;
       <Link to={`/races/${race.id}`} className="flex min-w-0 flex-1 items-center gap-3">
         <BibDate date={race.race_date} active={isMine} muted={cancelled} />
         <div className="min-w-0 flex-1">
-          <p className={cx('truncate text-[15px] font-bold leading-snug', cancelled && 'line-through opacity-60')}>{race.event_name}</p>
+          <p className={cx('line-clamp-2 text-[15px] font-bold leading-snug', cancelled && 'line-through opacity-60')}>{race.event_name}</p>
           <p className="mt-0.5 flex items-center gap-1 truncate text-xs text-neutral-500 dark:text-neutral-400">
+            {race.end_date && <span className="shrink-0 font-semibold text-brand-black dark:text-white">{formatRaceDates(race).replace(/ \d{4}$/, '')} ·</span>}
             {race.location && (
               <>
                 <MapPin className="h-3 w-3 shrink-0" />

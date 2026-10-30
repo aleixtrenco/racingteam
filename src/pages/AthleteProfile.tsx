@@ -4,7 +4,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, CalendarDays, ExternalLink, Medal, Pencil, Trophy } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfiles, useRaces, useRegistrations, useResults } from '@/hooks/useData';
-import { formatDate, isUpcoming, teamToday } from '@/lib/dates';
+import { formatDate, raceIsUpcoming, teamToday } from '@/lib/dates';
 import { seasonRanking } from '@/lib/ranking';
 import { Avatar } from '@/components/Avatar';
 import { BibDate } from '@/components/BibDate';
@@ -39,7 +39,7 @@ export default function AthleteProfile() {
       season,
       rank: rankIdx >= 0 && season?.points ? rankIdx + 1 : null,
       podiums: mine.filter((r) => r.overall_position && r.overall_position <= 3).length,
-      upcoming: races.filter((r) => upcomingIds.has(r.id) && isUpcoming(r.race_date) && r.status !== 'Cancelled'),
+      upcoming: races.filter((r) => upcomingIds.has(r.id) && raceIsUpcoming(r) && r.status !== 'Cancelled'),
     };
   }, [athlete, results, regs, races, year]);
 

@@ -6,6 +6,7 @@ import { Button, ErrorNote, Input, Label, Modal, Select, Textarea } from './ui';
 const blank: RaceInput = {
   event_name: '',
   race_date: '',
+  end_date: null,
   location: '',
   status: 'Tentative',
   priority: 'Medium',
@@ -39,6 +40,7 @@ export function RaceFormModal({ open, onClose, race, initial }: { open: boolean;
       location: form.location?.trim() || null,
       athletes_racing_note: form.athletes_racing_note?.trim() || null,
       external_id: form.external_id?.trim() || null,
+      end_date: form.end_date && form.end_date > form.race_date ? form.end_date : null,
     });
     onClose();
   };
@@ -51,12 +53,15 @@ export function RaceFormModal({ open, onClose, race, initial }: { open: boolean;
         </Label>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Label label="Date">
-            <Input required type="date" value={form.race_date} onChange={(e) => set('race_date', e.target.value)} />
+            <Input id="race-date" required type="date" value={form.race_date} onChange={(e) => set('race_date', e.target.value)} />
           </Label>
-          <Label label="Location">
-            <Input value={form.location ?? ''} onChange={(e) => set('location', e.target.value)} />
+          <Label label="Last day (multi-day events)" hint="Leave empty for one-day races.">
+            <Input id="race-end-date" type="date" min={form.race_date || undefined} value={form.end_date ?? ''} onChange={(e) => set('end_date', e.target.value || null)} />
           </Label>
         </div>
+        <Label label="Location">
+          <Input id="race-location" value={form.location ?? ''} onChange={(e) => set('location', e.target.value)} />
+        </Label>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <Label label="Discipline">
             <Select value={form.discipline} onChange={(e) => set('discipline', e.target.value as RaceInput['discipline'])}>

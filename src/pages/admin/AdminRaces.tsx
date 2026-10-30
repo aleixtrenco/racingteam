@@ -3,7 +3,7 @@ import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Copy, MapPin, Pencil, Plus, Search, Trash2, Users } from 'lucide-react';
 import { useDeleteRace, usePatchRace, useRaces, useRegistrations } from '@/hooks/useData';
-import { isUpcoming, teamToday } from '@/lib/dates';
+import { raceIsUpcoming, teamToday } from '@/lib/dates';
 import { DISCIPLINES, PRIORITIES, STATUSES, type Race, type RaceStatus } from '@/lib/types';
 import { RaceFormModal } from '@/components/RaceFormModal';
 import { BibDate } from '@/components/BibDate';
@@ -34,7 +34,7 @@ export default function AdminRaces() {
     const needle = q.trim().toLowerCase();
     const l = races.filter(
       (r) =>
-        isUpcoming(r.race_date, today) === (view === 'upcoming') &&
+        raceIsUpcoming(r, today) === (view === 'upcoming') &&
         (discipline === 'All' || r.discipline === discipline) &&
         (!needle || `${r.event_name} ${r.location ?? ''}`.toLowerCase().includes(needle)),
     );

@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { CalendarDays } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useRaces, useRegistrations } from '@/hooks/useData';
-import { formatMonth, isUpcoming, teamToday } from '@/lib/dates';
+import { formatMonth, raceIsUpcoming, teamToday } from '@/lib/dates';
 import { DISCIPLINES, STATUSES } from '@/lib/types';
 import { RaceRow } from '@/components/RaceRow';
 import { EmptyState, PageHeader, Select, Spinner, cx } from '@/components/ui';
@@ -17,7 +17,7 @@ export default function Calendar() {
   const { months, mine, counts, total } = useMemo(() => {
     const today = teamToday();
     const filtered = races.filter(
-      (r) => isUpcoming(r.race_date, today) && (discipline === 'All' || r.discipline === discipline) && (status === 'All' || r.status === status),
+      (r) => raceIsUpcoming(r, today) && (discipline === 'All' || r.discipline === discipline) && (status === 'All' || r.status === status),
     );
     const months = new Map<string, typeof filtered>();
     for (const r of filtered) {

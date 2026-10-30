@@ -6,7 +6,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { useRaces, useRegistrations } from '@/hooks/useData';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
-import { DEADLINE_WARNING_DAYS, daysBetween, daysToDeadline, deadlineLabel, formatDate, formatShort, isRegistrationOpen, isUpcoming, teamToday } from '@/lib/dates';
+import { formatRaceDates, DEADLINE_WARNING_DAYS, daysBetween, daysToDeadline, deadlineLabel, formatShort, isRegistrationOpen, raceIsUpcoming, teamToday } from '@/lib/dates';
 import type { Race } from '@/lib/types';
 import { Logo } from '@/components/Logo';
 import { RaceRow } from '@/components/RaceRow';
@@ -25,7 +25,7 @@ export default function Home() {
 
   const s = useMemo(() => {
     const today = teamToday();
-    const upcoming = races.filter((r) => isUpcoming(r.race_date, today) && r.status !== 'Cancelled');
+    const upcoming = races.filter((r) => raceIsUpcoming(r, today) && r.status !== 'Cancelled');
     const mine = new Set(regs.filter((r) => r.user_id === profile?.id).map((r) => r.race_id));
     const countByRace = regs.reduce<Record<string, number>>((m, r) => ((m[r.race_id] = (m[r.race_id] ?? 0) + 1), m), {});
     const deadlines = upcoming.filter((r) => {
@@ -184,7 +184,7 @@ function Spotlight({ race, mine }: { race: Race; mine: boolean }) {
         <div className="min-w-0">
           <p className="text-lg font-extrabold leading-tight sm:text-xl">{race.event_name}</p>
           <p className="mt-1 flex items-center gap-1 text-xs text-neutral-500">
-            <MapPin className="h-3 w-3" /> {race.location ?? 'TBC'} · {formatDate(race.race_date)}
+            <MapPin className="h-3 w-3" /> {race.location ?? 'TBC'} · {formatRaceDates(race)}
           </p>
         </div>
         <div className="shrink-0 text-right">
