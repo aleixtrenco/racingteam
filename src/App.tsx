@@ -1,5 +1,6 @@
 import { Suspense, lazy, type ReactNode } from 'react';
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, MemoryRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { isDemo } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
 import { Layout } from '@/components/Layout';
 import { Spinner } from '@/components/ui';
@@ -15,6 +16,9 @@ const Ranking = lazy(() => import('@/pages/Ranking'));
 const Admin = lazy(() => import('@/pages/Admin'));
 const Participation = lazy(() => import('@/pages/Participation'));
 const ResetPassword = lazy(() => import('@/pages/ResetPassword'));
+
+// The sample-data preview runs inside an embedded frame, where the URL path isn't ours.
+const Router = isDemo ? MemoryRouter : BrowserRouter;
 
 const AdminOnly = ({ children }: { children: ReactNode }) => {
   const { isAdmin, profile } = useAuth();
@@ -33,7 +37,7 @@ export default function App() {
     );
 
   return (
-    <BrowserRouter>
+    <Router>
       {!session ? (
         <Routes>
           <Route path="*" element={<Login />} />
@@ -56,6 +60,6 @@ export default function App() {
           </Routes>
         </Suspense>
       )}
-    </BrowserRouter>
+    </Router>
   );
 }

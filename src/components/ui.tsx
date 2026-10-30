@@ -138,3 +138,20 @@ export function PullIndicator({ pull, refreshing }: { pull: number; refreshing: 
     </div>
   );
 }
+
+/** In-app confirmation (native-feeling, and works where browser dialogs are blocked). */
+export function ConfirmModal({ open, title, message, confirmLabel = 'Delete', onConfirm, onClose, loading }: { open: boolean; title: string; message: ReactNode; confirmLabel?: string; onConfirm: () => void; onClose: () => void; loading?: boolean }) {
+  return (
+    <Modal open={open} onClose={onClose} title={title}>
+      <p className="text-sm text-neutral-600 dark:text-neutral-300">{message}</p>
+      <div className="mt-5 flex gap-2 pb-2">
+        <Button variant="secondary" className="flex-1" onClick={onClose}>
+          Cancel
+        </Button>
+        <Button variant="danger" className="flex-1" onClick={onConfirm} loading={loading}>
+          {confirmLabel}
+        </Button>
+      </div>
+    </Modal>
+  );
+}

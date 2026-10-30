@@ -6,7 +6,7 @@ import { useDeleteResult, useResults, useSignedUrls } from '@/hooks/useData';
 import { formatDate } from '@/lib/dates';
 import type { RaceResult } from '@/lib/types';
 import { ResultFormModal } from '@/components/ResultFormModal';
-import { Button, Card, EmptyState, ErrorNote, Modal, PageHeader, Spinner, cx } from '@/components/ui';
+import { Button, Card, ConfirmModal, EmptyState, ErrorNote, Modal, PageHeader, Spinner, cx } from '@/components/ui';
 
 const ordinal = (n: number) => `${n}${['th', 'st', 'nd', 'rd'][n % 100 > 10 && n % 100 < 14 ? 0 : n % 10 < 4 ? n % 10 : 0]}`;
 
@@ -17,6 +17,7 @@ export default function Results() {
   const [params, setParams] = useSearchParams();
   const [editing, setEditing] = useState<RaceResult | null>(null);
   const [adding, setAdding] = useState(false);
+  const [deleting, setDeleting] = useState<RaceResult | null>(null);
   const [lightbox, setLightbox] = useState<string | null>(null);
   const addFor = params.get('add') ?? undefined;
 
@@ -98,7 +99,7 @@ export default function Results() {
                               <Pencil className="h-4 w-4" />
                             </button>
                             <button
-                              onClick={() => confirm(`Delete ${r.athlete_name}'s result for ${r.race_name}?`) && del.mutate(r)}
+                              onClick={() => setDeleting(r)}
                               className="flex min-h-touch min-w-touch items-center justify-center rounded-full text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
                               aria-label="Delete result"
                             >
@@ -126,6 +127,14 @@ export default function Results() {
       )}
 
       <ResultFormModal open={adding || !!editing || !!addFor} onClose={closeForm} result={editing} defaultRaceId={addFor} />
+      <ConfirmModal
+        open={!!deleting}
+        title="Delete result?"
+        message={`${deleting?.athlete_name}'s result for ${deleting?.race_name}, including its photos, will be removed. This can't be undone.`}
+        loading={del.isPending}
+        onClose={() => setDeleting(null)}
+        onConfirm={() => deleting && del.mutate(deleting, { onSuccess: () => setDeleting(null) })}
+      />
       <Modal open={!!lightbox} onClose={() => setLightbox(null)} title="Photo">
         {lightbox && <img src={lightbox} alt="" className="w-full rounded-xl" />}
       </Modal>

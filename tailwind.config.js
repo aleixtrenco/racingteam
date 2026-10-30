@@ -1,7 +1,8 @@
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ['./index.html', './src/**/*.{ts,tsx}'],
-  darkMode: 'media', // follows the device setting, no manual toggle
+  // Follows the device setting (no in-app toggle); a host can force a theme with data-theme on <html>.
+  darkMode: ['variant', ['@media (prefers-color-scheme: dark) { &:not(:where([data-theme=light], [data-theme=light] *)) }', '&:where([data-theme=dark], [data-theme=dark] *)']],
   theme: {
     extend: {
       colors: {

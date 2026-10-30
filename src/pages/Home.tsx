@@ -49,7 +49,7 @@ export default function Home() {
       {/* Hero */}
       <section className="relative -mx-4 overflow-hidden bg-brand-black px-6 py-10 text-white sm:mx-0 sm:rounded-3xl sm:px-10 sm:py-14">
         <img
-          src="/brand/hero.jpg"
+          src={`${import.meta.env.BASE_URL}brand/hero.jpg`}
           alt=""
           fetchPriority="high"
           decoding="async"
@@ -139,7 +139,7 @@ export default function Home() {
             </div>
           </Card>
           <Card className="hidden overflow-hidden lg:block">
-            <img src="/brand/kit-2026.png" alt="2026 team kit" loading="lazy" decoding="async" onError={(e) => ((e.currentTarget.parentElement as HTMLElement).style.display = 'none')} className="w-full bg-neutral-100 object-contain dark:bg-neutral-800" />
+            <img src={`${import.meta.env.BASE_URL}brand/kit-2026.png`} alt="2026 team kit" loading="lazy" decoding="async" onError={(e) => ((e.currentTarget.parentElement as HTMLElement).style.display = 'none')} className="w-full bg-neutral-100 object-contain dark:bg-neutral-800" />
             <p className="p-4 text-sm font-bold">The 2026 team kit</p>
           </Card>
         </aside>

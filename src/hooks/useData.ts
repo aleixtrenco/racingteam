@@ -2,7 +2,7 @@
 // once and shared by every screen via the query cache, which keeps the number of
 // requests on app start to two.
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/lib/supabase';
+import { isDemo, supabase } from '@/lib/supabase';
 import type { Race, RaceResult, Registration, Sponsor } from '@/lib/types';
 
 const unwrap = <T,>({ data, error }: { data: T | null; error: { message: string } | null }): T => {
@@ -134,6 +134,10 @@ export function useSignedUrls(paths: string[]) {
     enabled: paths.length > 0,
     staleTime: 50 * 60_000,
     queryFn: async () => {
+      if (isDemo) {
+        const local = (window as unknown as { __demoPhotoUrl?: (p: string) => string | undefined }).__demoPhotoUrl;
+        return Object.fromEntries(paths.map((p) => [p, local?.(p)]).filter(([, u]) => u)) as Record<string, string>;
+      }
       const { data, error } = await supabase.storage.from(PHOTO_BUCKET).createSignedUrls(paths, 60 * 60);
       if (error) throw error;
       return Object.fromEntries(data.filter((d) => d.signedUrl).map((d) => [d.path, d.signedUrl])) as Record<string, string>;

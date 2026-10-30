@@ -5,7 +5,7 @@ import { useDeleteRace, useRaces, useRegistrations } from '@/hooks/useData';
 import { formatDate, isUpcoming, teamToday } from '@/lib/dates';
 import type { Race } from '@/lib/types';
 import { RaceFormModal } from '@/components/RaceFormModal';
-import { Badge, Button, Card, DisciplineBadge, ErrorNote, PageHeader, Spinner, StatusBadge, cx } from '@/components/ui';
+import { Badge, Button, Card, ConfirmModal, DisciplineBadge, ErrorNote, PageHeader, Spinner, StatusBadge, cx } from '@/components/ui';
 
 export default function Admin() {
   const { data: races = [], isLoading } = useRaces();
@@ -22,10 +22,9 @@ export default function Admin() {
     return view === 'past' ? l.reverse() : l;
   }, [races, view]);
 
-  const remove = (r: Race) => {
-    const n = counts[r.id] ?? 0;
-    if (confirm(`Delete "${r.event_name}"?${n ? ` This also removes ${n} registration${n === 1 ? '' : 's'}.` : ''}`)) del.mutate(r.id);
-  };
+  const [deleting, setDeleting] = useState<Race | null>(null);
+  const remove = (r: Race) => setDeleting(r);
+  const deletingCount = deleting ? (counts[deleting.id] ?? 0) : 0;
 
   return (
     <div>
@@ -107,6 +106,14 @@ export default function Admin() {
         </Card>
       )}
 
+      <ConfirmModal
+        open={!!deleting}
+        title="Delete race?"
+        message={`"${deleting?.event_name}" will be removed${deletingCount ? ` along with ${deletingCount} registration${deletingCount === 1 ? '' : 's'}` : ''}. This can't be undone.`}
+        loading={del.isPending}
+        onClose={() => setDeleting(null)}
+        onConfirm={() => deleting && del.mutate(deleting.id, { onSuccess: () => setDeleting(null) })}
+      />
       <RaceFormModal open={adding || !!editing} onClose={() => (setAdding(false), setEditing(null))} race={editing} />
     </div>
   );

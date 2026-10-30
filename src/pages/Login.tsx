@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { supabase, isConfigured } from '@/lib/supabase';
+import { supabase, isConfigured, isDemo } from '@/lib/supabase';
 import { Logo } from '@/components/Logo';
 import { Button, ErrorNote, Input, Label } from '@/components/ui';
 
@@ -45,6 +45,10 @@ export default function Login() {
 
   const google = async () => {
     setError(null);
+    if (isDemo) {
+      const { error } = await supabase.auth.signInWithPassword({ email: 'demo@wolfis.ae', password: 'demo-preview' });
+      return error && setError(error);
+    }
     const { error } = await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin } });
     if (error) setError(error);
   };
