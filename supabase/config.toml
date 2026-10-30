@@ -1,0 +1,9 @@
+# Edge Functions are invoked by the database with a shared secret, not a user JWT.
+[functions.on-registration]
+verify_jwt = false
+
+[functions.on-result]
+verify_jwt = false
+
+[functions.recap-reminder]
+verify_jwt = false
