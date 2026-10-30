@@ -54,13 +54,14 @@ export default function Login() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-brand-black text-white">
-      <div className="flex flex-1 flex-col items-center justify-center px-6 pb-10 pt-[calc(3rem+env(safe-area-inset-top))]">
-        <Logo inverted className="h-14" />
-        <div className="mt-3 h-1 w-16 rounded-full bg-brand-yellow" />
-        <p className="mt-4 text-center text-sm text-neutral-400">Athlete portal · race calendar, registrations & results</p>
+    <div className="relative flex min-h-screen flex-col overflow-hidden bg-brand-black text-white">
+      <div aria-hidden className="absolute -right-10 -top-10 h-[230px] w-[120px] skew-x-[-18deg] bg-brand-yellow sm:-right-32 sm:h-[420px] sm:w-[40%]" />
+      <div aria-hidden className="absolute -right-10 -top-10 h-[230px] w-[120px] -translate-x-[30px] skew-x-[-18deg] border-l-[8px] border-white/90 sm:-right-32 sm:h-[420px] sm:w-[40%] sm:-translate-x-[38px] sm:border-l-[10px]" />
+      <div className="relative flex flex-1 flex-col justify-end px-6 pb-10 pt-[calc(4rem+env(safe-area-inset-top))] sm:items-center sm:justify-center">
+        <Logo white className="h-16 self-start sm:h-20 sm:self-center" />
+        <p className="mt-5 max-w-xs text-[15px] leading-relaxed text-neutral-300 sm:text-center">The team's race calendar, sign-ups, results and season ranking, in one place.</p>
       </div>
-      <div className="rounded-t-3xl bg-white px-6 pb-[calc(2rem+env(safe-area-inset-bottom))] pt-7 text-brand-black dark:bg-neutral-900 dark:text-white sm:mx-auto sm:mb-16 sm:w-full sm:max-w-md sm:rounded-3xl sm:pb-8">
+      <div className="relative rounded-t-[28px] bg-white px-6 pb-[calc(2rem+env(safe-area-inset-bottom))] pt-7 text-brand-black dark:bg-neutral-900 dark:text-white sm:mx-auto sm:mb-16 sm:w-full sm:max-w-md sm:rounded-[28px] sm:pb-8">
         <h1 className="text-xl font-extrabold">{mode === 'signin' ? 'Sign in' : mode === 'signup' ? 'Create your account' : 'Reset password'}</h1>
         {!isConfigured && (
           <p className="mt-3 rounded-xl bg-amber-50 p-3 text-sm text-amber-800">Supabase isn't configured yet. Copy <code>.env.example</code> to <code>.env</code> and add your project URL and anon key.</p>

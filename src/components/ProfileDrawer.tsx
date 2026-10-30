@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { BarChart3, LogOut, Settings, Trash2, X } from 'lucide-react';
+import { BarChart3, Handshake, LogOut, Settings, Trash2, Trophy, X } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { deleteMyAccount } from '@/hooks/useData';
@@ -74,10 +74,16 @@ export function ProfileDrawer({ open, onClose }: { open: boolean; onClose: () =>
           <nav className="space-y-1 border-t border-neutral-200 px-3 py-4 dark:border-neutral-800">
             <p className="px-3 pb-1 text-xs font-bold uppercase tracking-widest text-neutral-500">Admin</p>
             <Link to="/admin" onClick={onClose} className={link}>
-              <Settings className="h-5 w-5" /> Race management
+              <Settings className="h-5 w-5" /> Races
             </Link>
-            <Link to="/admin/participation" onClick={onClose} className={link}>
-              <BarChart3 className="h-5 w-5" /> Participation summary
+            <Link to="/admin/results" onClick={onClose} className={link}>
+              <Trophy className="h-5 w-5" /> Results entry
+            </Link>
+            <Link to="/admin/sponsors" onClick={onClose} className={link}>
+              <Handshake className="h-5 w-5" /> Sponsors
+            </Link>
+            <Link to="/admin/athletes" onClick={onClose} className={link}>
+              <BarChart3 className="h-5 w-5" /> Athletes &amp; participation
             </Link>
           </nav>
         )}

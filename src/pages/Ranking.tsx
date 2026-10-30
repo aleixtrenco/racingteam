@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react';
 import { Medal, Trophy } from 'lucide-react';
 import { useResults } from '@/hooks/useData';
-import { seasonRanking, seasonsIn } from '@/lib/ranking';
+import { seasonRanking, seasonsIn, type RankingRow } from '@/lib/ranking';
+import { initials } from '@/components/ProfileDrawer';
 import { teamToday } from '@/lib/dates';
 import { Card, EmptyState, PageHeader, Select, Spinner, cx } from '@/components/ui';
 
@@ -28,6 +29,8 @@ export default function Ranking() {
       ) : rows.length === 0 ? (
         <EmptyState icon={<Trophy className="h-8 w-8" />} title={`No results for ${year} yet`} />
       ) : (
+        <div className="space-y-5">
+        <Podium rows={rows.filter((r) => r.points > 0).slice(0, 3)} />
         <Card className="overflow-hidden">
           <table className="w-full text-sm">
             <thead className="bg-brand-black text-left text-xs uppercase tracking-wide text-white">
@@ -56,7 +59,34 @@ export default function Ranking() {
             </tbody>
           </table>
         </Card>
+        </div>
       )}
     </div>
+  );
+}
+
+/** Season podium: 2nd · 1st · 3rd, step heights like the real thing. */
+function Podium({ rows }: { rows: RankingRow[] }) {
+  if (!rows.length) return null;
+  const order = [1, 0, 2].filter((i) => rows[i]);
+  const step = ['h-28 sm:h-32', 'h-20 sm:h-24', 'h-14 sm:h-16'];
+  return (
+    <section aria-label="Season podium" className="grid grid-cols-3 items-end gap-2 sm:gap-3">
+      {order.map((i) => {
+        const r = rows[i];
+        return (
+          <div key={r.athlete} className="flex min-w-0 flex-col items-center text-center">
+            <span className={cx('mb-2 flex h-11 w-11 items-center justify-center rounded-full text-sm font-extrabold sm:h-12 sm:w-12', i === 0 ? 'bg-brand-yellow text-brand-black ring-4 ring-brand-yellow/30' : 'bg-neutral-200 text-brand-black dark:bg-neutral-800 dark:text-white')}>
+              {initials(r.athlete)}
+            </span>
+            <p className="w-full truncate px-1 text-sm font-bold">{r.athlete}</p>
+            <p className="mb-2 text-xs tabular-nums text-neutral-500">{r.points} pts</p>
+            <div className={cx('flex w-full items-start justify-center rounded-t-2xl pt-2 text-3xl font-extrabold tabular-nums', step[i], i === 0 ? 'bg-brand-black text-brand-yellow dark:bg-brand-yellow dark:text-brand-black' : 'bg-white text-brand-black ring-1 ring-neutral-200 dark:bg-neutral-900 dark:text-white dark:ring-neutral-800')}>
+              {i + 1}
+            </div>
+          </div>
+        );
+      })}
+    </section>
   );
 }

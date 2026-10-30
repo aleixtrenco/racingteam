@@ -6,16 +6,19 @@ export default {
   theme: {
     extend: {
       colors: {
-        brand: { yellow: '#fed925', black: '#0a0a0a' },
+        brand: { yellow: '#fed925', black: '#0b0b0c' },
+        paper: '#f4f4f1',
       },
       fontFamily: {
-        sans: ['Gilroy', 'ui-sans-serif', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif'],
+        // Gilroy is the brand face; Outfit (Google Fonts) stands in until the licensed files are added.
+        sans: ['Gilroy', 'Outfit', 'ui-sans-serif', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif'],
       },
       spacing: {
         'safe-b': 'env(safe-area-inset-bottom)',
         'safe-t': 'env(safe-area-inset-top)',
       },
       minHeight: { touch: '44px' },
+      boxShadow: { lift: '0 1px 2px rgb(0 0 0 / 0.04), 0 8px 24px -12px rgb(0 0 0 / 0.18)' },
       minWidth: { touch: '44px' },
     },
   },

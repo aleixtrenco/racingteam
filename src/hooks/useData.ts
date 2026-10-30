@@ -3,7 +3,7 @@
 // requests on app start to two.
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { isDemo, supabase } from '@/lib/supabase';
-import type { Race, RaceResult, Registration, Sponsor } from '@/lib/types';
+import type { Profile, Race, RaceResult, Registration, Sponsor } from '@/lib/types';
 
 const unwrap = <T,>({ data, error }: { data: T | null; error: { message: string } | null }): T => {
   if (error) throw new Error(error.message);
@@ -15,6 +15,7 @@ export const keys = {
   registrations: ['registrations'] as const,
   results: ['results'] as const,
   sponsors: ['sponsors'] as const,
+  profiles: ['profiles'] as const,
 };
 
 export const useRaces = () =>
@@ -44,6 +45,14 @@ export const useSponsors = () =>
     queryKey: keys.sponsors,
     staleTime: 60 * 60_000,
     queryFn: async () => unwrap<Sponsor[]>(await supabase.from('sponsors').select('*').order('tier').order('display_order')),
+  });
+
+/** Team members (admin tools: athlete picker, participation). */
+export const useProfiles = (enabled = true) =>
+  useQuery({
+    queryKey: keys.profiles,
+    enabled,
+    queryFn: async () => unwrap<Profile[]>(await supabase.from('profiles').select('id, full_name, email, role').order('full_name')),
   });
 
 // ---- mutations -------------------------------------------------------------
@@ -86,6 +95,23 @@ export function useSaveRace() {
   });
 }
 
+/** Quick edits from the admin list (status, priority, team-entry flag). */
+export function usePatchRace() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, ...patch }: Partial<RaceInput> & { id: string }) =>
+      unwrap(await supabase.from('races').update(patch).eq('id', id).select().single()),
+    onMutate: async ({ id, ...patch }) => {
+      await qc.cancelQueries({ queryKey: keys.races });
+      const prev = qc.getQueryData<Race[]>(keys.races);
+      qc.setQueryData<Race[]>(keys.races, (rs) => rs?.map((r) => (r.id === id ? { ...r, ...patch } : r)));
+      return { prev };
+    },
+    onError: (_e, _v, ctx) => ctx?.prev && qc.setQueryData(keys.races, ctx.prev),
+    onSettled: () => qc.invalidateQueries({ queryKey: keys.races }),
+  });
+}
+
 export function useDeleteRace() {
   const qc = useQueryClient();
   return useMutation({
@@ -112,6 +138,23 @@ export function useSaveResult() {
   });
 }
 
+export type ResultRow = ResultInput & { id?: string };
+
+/** Admin results entry: save a whole race's results in one go (updates existing rows, inserts new ones). */
+export function useSaveResultsBatch() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (rows: ResultRow[]) => {
+      const updates = rows.filter((r) => r.id);
+      const inserts = rows.filter((r) => !r.id).map(({ id: _id, ...r }) => r);
+      for (const { id, ...r } of updates) unwrap(await supabase.from('race_results').update(r).eq('id', id!));
+      if (inserts.length) unwrap(await supabase.from('race_results').insert(inserts));
+      return rows.length;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: keys.results }),
+  });
+}
+
 export function useDeleteResult() {
   const qc = useQueryClient();
   return useMutation({
@@ -122,6 +165,43 @@ export function useDeleteResult() {
     onSuccess: () => qc.invalidateQueries({ queryKey: keys.results }),
   });
 }
+
+// ---- sponsors --------------------------------------------------------------
+
+export type SponsorInput = Omit<Sponsor, 'id'> & { id?: string };
+
+export function useSaveSponsor() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, ...sponsor }: SponsorInput) =>
+      id
+        ? unwrap(await supabase.from('sponsors').update(sponsor).eq('id', id).select().single())
+        : unwrap(await supabase.from('sponsors').insert(sponsor).select().single()),
+    onSuccess: () => qc.invalidateQueries({ queryKey: keys.sponsors }),
+  });
+}
+
+export function useDeleteSponsor() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => unwrap(await supabase.from('sponsors').delete().eq('id', id)),
+    onSuccess: () => qc.invalidateQueries({ queryKey: keys.sponsors }),
+  });
+}
+
+export const SPONSOR_BUCKET = 'sponsor-logos';
+
+export async function uploadSponsorLogo(file: File): Promise<string> {
+  const ext = file.name.split('.').pop()?.toLowerCase() ?? 'png';
+  const path = `${crypto.randomUUID()}.${ext}`;
+  const { error } = await supabase.storage.from(SPONSOR_BUCKET).upload(path, file, { contentType: file.type });
+  if (error) throw new Error(`Logo upload failed: ${error.message}`);
+  if (isDemo) return (window as unknown as { __demoPhotoUrl: (p: string) => string }).__demoPhotoUrl(path);
+  return supabase.storage.from(SPONSOR_BUCKET).getPublicUrl(path).data.publicUrl;
+}
+
+/** Logos bundled with the app are stored as relative paths; uploads are full URLs. */
+export const logoSrc = (url: string | null) => (!url ? null : /^(https?:|data:|blob:)/.test(url) ? url : `${import.meta.env.BASE_URL}${url.replace(/^\//, '')}`);
 
 // ---- photos ----------------------------------------------------------------
 

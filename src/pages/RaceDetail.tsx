@@ -8,6 +8,7 @@ import { daysBetween, daysToDeadline, deadlineLabel, formatDate, isRegistrationO
 import { TEAM_MANAGER } from '@/lib/supabase';
 import { RaceFormModal } from '@/components/RaceFormModal';
 import { initials } from '@/components/ProfileDrawer';
+import { BibDate } from '@/components/BibDate';
 import { Badge, Button, Card, DisciplineBadge, ErrorNote, Input, Label, PriorityBadge, Spinner, StatusBadge, cx } from '@/components/ui';
 
 export default function RaceDetail() {
@@ -43,12 +44,14 @@ export default function RaceDetail() {
   const daysToRace = daysBetween(today, race.race_date);
   const canJoin = !cancelled && !race.team_entry_only && open && !mine;
 
+  const join = () => profile && register.mutate({ raceId: race.id, userId: profile.id, note }, { onSuccess: () => setNote('') });
+
   const managerMail = `mailto:${TEAM_MANAGER.email}?subject=${encodeURIComponent(`Team entry: ${race.event_name} (${formatDate(race.race_date)})`)}&body=${encodeURIComponent(
     `Hi ${TEAM_MANAGER.name},\n\nPlease handle the team entry for ${race.event_name} on ${formatDate(race.race_date)}${race.location ? ` in ${race.location}` : ''}.\n\nAthletes registered in the app (${athletes.length}):\n${athletes.map((a) => `- ${a.athlete_name}${a.note ? ` (${a.note})` : ''}`).join('\n') || '- none yet'}\n\nThanks!`,
   )}`;
 
   return (
-    <div className="mx-auto max-w-3xl space-y-5">
+    <div className={cx('mx-auto max-w-3xl space-y-5', canJoin && 'pb-20 sm:pb-0')}>
       <button onClick={() => navigate(-1)} className="-ml-2 flex min-h-touch items-center gap-1 px-2 text-sm font-bold text-neutral-500">
         <ArrowLeft className="h-4 w-4" /> Back
       </button>
@@ -62,8 +65,9 @@ export default function RaceDetail() {
             <PriorityBadge priority={race.priority} />
             {race.team_entry_only && <Badge className="bg-neutral-900 text-white dark:bg-white dark:text-black">Team entry only</Badge>}
           </div>
-          <div className="flex items-start justify-between gap-3">
-            <h1 className={cx('text-2xl font-extrabold leading-tight sm:text-3xl', cancelled && 'line-through opacity-60')}>{race.event_name}</h1>
+          <div className="flex items-start gap-4">
+            <BibDate date={race.race_date} size="lg" active={!!mine} muted={cancelled} />
+            <h1 className={cx('min-w-0 flex-1 text-balance text-2xl font-extrabold leading-tight tracking-tight sm:text-3xl', cancelled && 'line-through opacity-60')}>{race.event_name}</h1>
             {isAdmin && (
               <Button variant="secondary" onClick={() => setEditing(true)} aria-label="Edit race" className="shrink-0 px-3">
                 <Pencil className="h-4 w-4" />
@@ -127,7 +131,7 @@ export default function RaceDetail() {
               <Label label="Note (optional)" hint="Distance, wave, t-shirt size…">
                 <Input value={note} onChange={(e) => setNote(e.target.value)} placeholder="e.g. 90 km, size M" maxLength={200} />
               </Label>
-              <Button className="w-full" loading={register.isPending} onClick={() => profile && register.mutate({ raceId: race.id, userId: profile.id, note }, { onSuccess: () => setNote('') })}>
+              <Button className="hidden w-full sm:flex" loading={register.isPending} onClick={join}>
                 Add Me to This Race
               </Button>
               <ErrorNote error={register.error} />
@@ -167,6 +171,16 @@ export default function RaceDetail() {
           </ul>
         )}
       </Card>
+
+      {/* Phones: the main action stays in reach above the tab bar */}
+      {canJoin && (
+        <div className="fixed inset-x-0 bottom-[calc(58px+env(safe-area-inset-bottom))] z-30 flex items-center gap-3 border-t border-neutral-200 bg-white/95 px-4 py-3 backdrop-blur dark:border-neutral-800 dark:bg-neutral-900/95 sm:hidden">
+          <span className="min-w-0 flex-1 text-xs font-semibold text-red-600 dark:text-red-400">{deadlineLabel(race.race_date, today)}</span>
+          <Button className="rounded-full px-5" loading={register.isPending} onClick={join}>
+            Add Me to This Race
+          </Button>
+        </div>
+      )}
 
       {isAdmin && <RaceFormModal open={editing} onClose={() => setEditing(false)} race={race} />}
     </div>

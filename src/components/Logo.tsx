@@ -1,13 +1,20 @@
 import { cx } from './ui';
 
-/** Team logo. `inverted` renders the white version for dark backgrounds; dark mode inverts automatically. */
-export const Logo = ({ className, inverted }: { className?: string; inverted?: boolean }) => (
+const BASE = import.meta.env.BASE_URL;
+
+/**
+ * Team logo (black artwork). `white` renders it white for dark surfaces;
+ * `black` keeps it black in both themes (e.g. on yellow). Otherwise it turns white in dark mode.
+ * `emblem` shows only the chain-link mark, for tight spaces.
+ */
+export const Logo = ({ className, white, black, emblem }: { className?: string; white?: boolean; black?: boolean; emblem?: boolean }) => (
   <img
-    src={`${import.meta.env.BASE_URL}brand/logo.svg`}
+    src={emblem ? `${BASE}brand/emblem.png` : `${BASE}brand/logo.webp`}
     alt="Wolfi's Racing Team"
-    width={180}
-    height={48}
+    width={emblem ? 128 : 700}
+    height={emblem ? 147 : 282}
     decoding="async"
-    className={cx('h-9 w-auto select-none', inverted ? 'invert' : 'dark:invert', className)}
+    draggable={false}
+    className={cx('h-9 w-auto select-none', white ? 'brightness-0 invert' : !black && 'dark:brightness-0 dark:invert', className)}
   />
 );

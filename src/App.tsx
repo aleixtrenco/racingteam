@@ -13,8 +13,11 @@ const RaceDetail = lazy(() => import('@/pages/RaceDetail'));
 const MyRaces = lazy(() => import('@/pages/MyRaces'));
 const Results = lazy(() => import('@/pages/Results'));
 const Ranking = lazy(() => import('@/pages/Ranking'));
-const Admin = lazy(() => import('@/pages/Admin'));
-const Participation = lazy(() => import('@/pages/Participation'));
+const AdminLayout = lazy(() => import('@/pages/admin/AdminLayout'));
+const AdminRaces = lazy(() => import('@/pages/admin/AdminRaces'));
+const AdminResults = lazy(() => import('@/pages/admin/AdminResults'));
+const AdminSponsors = lazy(() => import('@/pages/admin/AdminSponsors'));
+const AdminAthletes = lazy(() => import('@/pages/admin/AdminAthletes'));
 const ResetPassword = lazy(() => import('@/pages/ResetPassword'));
 
 // The sample-data preview runs inside an embedded frame, where the URL path isn't ours.
@@ -53,8 +56,13 @@ export default function App() {
               <Route path="results" element={<Results />} />
               <Route path="ranking" element={<Ranking />} />
               <Route path="reset-password" element={<ResetPassword />} />
-              <Route path="admin" element={<AdminOnly><Admin /></AdminOnly>} />
-              <Route path="admin/participation" element={<AdminOnly><Participation /></AdminOnly>} />
+              <Route path="admin" element={<AdminOnly><AdminLayout /></AdminOnly>}>
+                <Route index element={<AdminRaces />} />
+                <Route path="results" element={<AdminResults />} />
+                <Route path="sponsors" element={<AdminSponsors />} />
+                <Route path="athletes" element={<AdminAthletes />} />
+                <Route path="participation" element={<Navigate to="/admin/athletes" replace />} />
+              </Route>
               <Route path="*" element={<Navigate to="/" replace />} />
             </Route>
           </Routes>

@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 96" width="360" height="96">
-  <!-- Placeholder wordmark. Replace with the official black Wolfi's Racing Team logo (same filename). -->
-  <rect x="0" y="8" width="80" height="80" rx="16" fill="#0a0a0a"/>
-  <path d="M14 30 L24 66 L34 40 L40 58 L46 40 L56 66 L66 30" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
-  <text x="96" y="50" font-family="Gilroy, Helvetica, Arial, sans-serif" font-weight="800" font-size="38" fill="#0a0a0a" letter-spacing="1">WOLFI'S</text>
-  <text x="97" y="82" font-family="Gilroy, Helvetica, Arial, sans-serif" font-weight="700" font-size="22" fill="#0a0a0a" letter-spacing="5.5">RACING TEAM</text>
-</svg>

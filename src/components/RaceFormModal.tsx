@@ -15,18 +15,19 @@ const blank: RaceInput = {
   external_id: '',
 };
 
-export function RaceFormModal({ open, onClose, race }: { open: boolean; onClose: () => void; race?: Race | null }) {
+/** `race` edits an existing race; `initial` prefills a new one (e.g. a duplicate). */
+export function RaceFormModal({ open, onClose, race, initial }: { open: boolean; onClose: () => void; race?: Race | null; initial?: Race | null }) {
   const [form, setForm] = useState<RaceInput>(blank);
   const save = useSaveRace();
 
   useEffect(() => {
     if (open) {
-      const { id: _id, ...rest } = race ?? ({ id: '', ...blank } as Race);
+      const { id: _id, ...rest } = race ?? initial ?? ({ id: '', ...blank } as Race);
       setForm(rest);
       save.reset();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, race]);
+  }, [open, race, initial]);
 
   const set = <K extends keyof RaceInput>(k: K, v: RaceInput[K]) => setForm((f) => ({ ...f, [k]: v }));
 

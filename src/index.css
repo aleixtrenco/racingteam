@@ -16,7 +16,7 @@
     overscroll-behavior: none; /* no rubber-band bounce */
   }
   body {
-    @apply bg-neutral-50 font-sans text-brand-black antialiased dark:bg-brand-black dark:text-white;
+    @apply bg-paper font-sans text-brand-black antialiased dark:bg-brand-black dark:text-white;
     overscroll-behavior-y: none;
   }
   /* Controls behave like native UI: no text selection, no callouts. */

@@ -52,17 +52,24 @@ Export each Base44 entity to CSV and import it in **Supabase → Table editor �
 
 Athletes then sign up again with the same email, or with Google. Passwords can't be exported from Base44.
 
-## 4. Brand assets (replace the placeholders)
+## 4. Brand assets
+
+Already in the app:
 
 | File | What |
 |---|---|
-| `public/brand/logo.svg` | The black Wolfi's Racing Team logo. It is auto-inverted to white on dark backgrounds and in dark mode. |
-| `public/brand/icon.svg` | App icon / favicon |
-| `public/brand/hero.jpg` | Hero banner. **Keep it under ~200 KB** (e.g. 1600 px wide, WebP/JPEG at 75%). This matters most for phone load times. |
-| `public/brand/kit-2026.png` | 2026 kit mockup (desktop only, lazy-loaded). The card stays hidden until this file exists. |
-| `public/fonts/Gilroy-{Regular,Medium,Bold,ExtraBold}.woff2` | Licensed Gilroy files. Until they are added, the app falls back to the system font. |
+| `public/brand/logo.webp` (+ `logo.png`) | Official Wolfi's Racing Team logo, black on transparent. Turned white automatically on dark surfaces. |
+| `public/brand/emblem.png`, `icon-512.png`, `apple-touch-icon.png`, `favicon.png` | Chain-link emblem, the app icon (black on yellow) and the favicon |
+| `public/sponsors/{skoda,breitling,lake,scicon}.webp` | Sponsor logos with transparent backgrounds |
 
-Sponsor logos: upload them anywhere public (e.g. a public Supabase bucket) and set `sponsors.logo_url`. Tier 1 is shown large and tier 2 small.
+Still to add:
+
+| File | What |
+|---|---|
+| `public/brand/hero.jpg` | Optional hero photo behind the Home banner. **Keep it under ~200 KB.** |
+| `public/brand/kit-2026.png` | 2026 kit mockup (desktop only). The card stays hidden until it exists. |
+| `public/fonts/Gilroy-{Regular,Medium,Bold,ExtraBold}.woff2` | Licensed Gilroy. Until it's added, the app uses Outfit from Google Fonts. |
+| ABUS and Sox logos | Upload them in **Admin → Sponsors**, and add Sox's website there. |
 
 ## 5. Deploy
 
@@ -88,6 +95,7 @@ Sponsor logos: upload them anywhere public (e.g. a public Supabase bucket) and s
 | Private photos via time-limited links | `recap-photos` bucket plus `createSignedUrls` (one request per page) |
 | Account deletion | Profile drawer → `delete_my_account()` (photos, registrations, results, then the account itself) |
 | Automations 1–4 | `supabase/functions/*` triggered from the database. Recap reminder: Mondays 09:00 Dubai. |
+| Admin area | **Admin → Races** (search, quick status/priority/team-entry changes, edit, duplicate, delete) · **Results** (pick a race, enter every rider's overall position and time, save all at once; full recap with photos) · **Sponsors** (logo, website, tier, order) · **Athletes** (participation per season, CSV) |
 | Notification bell | Derived in-app from data (`useNotifications`): closing deadlines, races this week, recaps to add |
 | Native feel | Bottom tab bar with safe areas, 44 px targets, no overscroll/tap highlight/control selection, pull-to-refresh on Home and My Races |
 

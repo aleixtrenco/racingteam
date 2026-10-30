@@ -4,7 +4,7 @@ import { supabase } from '@/lib/supabase';
 import type { RaceResult } from '@/lib/types';
 import { formatShort, teamToday } from '@/lib/dates';
 import { useAuth } from '@/hooks/useAuth';
-import { PHOTO_BUCKET, uploadPhotos, useRaces, useSaveResult, useSignedUrls } from '@/hooks/useData';
+import { PHOTO_BUCKET, uploadPhotos, useProfiles, useRaces, useSaveResult, useSignedUrls } from '@/hooks/useData';
 import { Button, ErrorNote, Input, Label, Modal, Select, Textarea } from './ui';
 
 const MAX_PHOTOS = 8;
@@ -12,10 +12,13 @@ const MAX_PHOTOS = 8;
 export function ResultFormModal({ open, onClose, result, defaultRaceId }: { open: boolean; onClose: () => void; result?: RaceResult | null; defaultRaceId?: string }) {
   const { profile, isAdmin } = useAuth();
   const { data: races = [] } = useRaces();
+  const { data: profiles = [] } = useProfiles(isAdmin);
   const save = useSaveResult();
 
   const [raceId, setRaceId] = useState('');
   const [athlete, setAthlete] = useState('');
+  // Admins pick a team member (links the result to their account) or type a guest's name.
+  const [athleteId, setAthleteId] = useState<string>('');
   const [position, setPosition] = useState('');
   const [resultText, setResultText] = useState('');
   const [notes, setNotes] = useState('');
@@ -28,6 +31,7 @@ export function ResultFormModal({ open, onClose, result, defaultRaceId }: { open
     if (!open) return;
     setRaceId(result?.race_id ?? defaultRaceId ?? '');
     setAthlete(result?.athlete_name ?? profile?.full_name ?? '');
+    setAthleteId(result ? (result.user_id ?? 'guest') : (profile?.id ?? ''));
     setPosition(result?.overall_position?.toString() ?? '');
     setResultText(result?.result_text ?? '');
     setNotes(result?.notes ?? '');
@@ -53,17 +57,19 @@ export function ResultFormModal({ open, onClose, result, defaultRaceId }: { open
     setError(null);
     try {
       const uploaded = files.length ? await uploadPhotos(profile.id, files) : [];
-      const ownEntry = athlete.trim() === profile.full_name.trim();
+      const picked = profiles.find((p) => p.id === athleteId);
+      const name = isAdmin && picked ? picked.full_name : athlete.trim();
+      const userId = isAdmin ? (picked?.id ?? null) : result ? result.user_id : profile.id;
       await save.mutateAsync({
         id: result?.id,
         race_id: raceId,
-        athlete_name: athlete.trim(),
+        athlete_name: name,
         overall_position: position ? Number(position) : null,
         result_text: resultText.trim() || null,
         notes: notes.trim() || null,
         photos: [...kept, ...uploaded],
-        // Athletes always own their entries; admins entering for someone else leave it unlinked.
-        user_id: result ? result.user_id : isAdmin && !ownEntry ? null : profile.id,
+        // Athletes always own their entries; admins choose whose result it is.
+        user_id: userId,
       });
       const removed = (result?.photos ?? []).filter((p) => !kept.includes(p));
       if (removed.length) await supabase.storage.from(PHOTO_BUCKET).remove(removed);
@@ -92,9 +98,28 @@ export function ResultFormModal({ open, onClose, result, defaultRaceId }: { open
             ))}
           </Select>
         </Label>
-        <Label label="Athlete">
-          <Input required value={athlete} onChange={(e) => setAthlete(e.target.value)} readOnly={!isAdmin} className={!isAdmin ? 'opacity-70' : undefined} />
-        </Label>
+        {isAdmin ? (
+          <div className="grid gap-2">
+            <Label label="Athlete">
+              <Select id="result-athlete" required value={athleteId} onChange={(e) => setAthleteId(e.target.value)}>
+                <option value="" disabled>
+                  Choose an athlete…
+                </option>
+                {profiles.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.full_name}
+                  </option>
+                ))}
+                <option value="guest">Guest rider (not in the app)</option>
+              </Select>
+            </Label>
+            {athleteId === 'guest' && <Input id="result-guest" required value={athlete} onChange={(e) => setAthlete(e.target.value)} placeholder="Guest rider's name" aria-label="Guest rider's name" />}
+          </div>
+        ) : (
+          <Label label="Athlete">
+            <Input value={athlete} readOnly className="opacity-70" />
+          </Label>
+        )}
         <Label label="Overall position" hint="Your place in the overall classification, not your age group. Used for the season ranking. Leave blank if DNF / not classified.">
           <Input type="number" inputMode="numeric" min={1} value={position} onChange={(e) => setPosition(e.target.value)} placeholder="e.g. 3" />
         </Label>
